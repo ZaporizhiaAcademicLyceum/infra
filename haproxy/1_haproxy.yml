@@ -1,0 +1,67 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Enable community repository
+      replace:
+        path: /etc/apk/repositories
+        regexp: '^#http(.*)/v(.*)/community$'
+        replace: 'http\1/v\2/community'
+
+    - name: Install packages
+      apk:
+        name:
+          - haproxy
+          - certbot
+        state: present
+        update_cache: yes
+
+    - name: Create a directory for HAProxy certs
+      file:
+        path: /etc/ssl/haproxy
+        state: directory
+
+    - name: Init letsencrypt dir structure
+      command: certbot certificates
+
+    - name: Create certbot renew deploy hook
+      copy:
+        dest: /etc/letsencrypt/renewal-hooks/deploy/haproxy.sh
+        mode: 0755
+        content: |
+          cat \
+            $RENEWED_LINEAGE/fullchain.pem \
+            $RENEWED_LINEAGE/privkey.pem > \
+            /etc/ssl/haproxy/$(basename $RENEWED_LINEAGE).pem
+
+    - name: Create certbot renew post-deploy hook
+      copy:
+        dest: /etc/letsencrypt/renewal-hooks/post/haproxy.sh
+        mode: 0755
+        content: service haproxy reload
+
+    - name: Create HAProxy configuration file for certs dry-run
+      copy:
+        dest: /etc/haproxy/haproxy.cfg
+        content: |
+          defaults
+            mode http
+            timeout connect 5000
+            timeout client  50000
+            timeout server  50000
+
+          frontend INGRESS
+            bind *:80
+
+            acl le-acme path_beg /.well-known/acme-challenge/
+            use_backend LETSENCRYPT if le-acme
+
+          backend LETSENCRYPT
+            server le-standalone 127.0.0.1:8888
+      notify:
+        - restart haproxy
+
+  handlers:
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted

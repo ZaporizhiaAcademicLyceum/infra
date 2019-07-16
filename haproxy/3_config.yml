@@ -1,0 +1,15 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Copy HAProxy config
+      copy:
+        src: ./haproxy.cfg
+        dest: /etc/haproxy/haproxy.cfg
+      notify:
+        - restart haproxy
+
+  handlers:
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
