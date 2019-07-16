@@ -15,6 +15,11 @@
         state: present
         update_cache: yes
 
+    - name: Start HAProxy on boot 
+      service:
+        name: haproxy
+        enabled: yes
+
     - name: Create a directory for HAProxy certs
       file:
         path: /etc/ssl/haproxy
