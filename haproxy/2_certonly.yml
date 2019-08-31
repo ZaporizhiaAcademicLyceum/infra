@@ -24,6 +24,7 @@
         domains:
           - smartmail.academlyceum.zp.ua
           - netschool.academlyceum.zp.ua
+          - students.academlyceum.zp.ua
       - name: up24
         domains:
           - up24.xyz
