@@ -17,7 +17,7 @@
       loop: "{{ certs }}"
   vars:
     # ===== <IMPORTANT> =====
-    email: PLEASE_ENTER_VALID_EMAIL@gmail.com
+    email: snosme@gmail.com
     # ===== </IMPORTANT> =====
     certs:
       - name: academlyceum
@@ -29,3 +29,7 @@
         domains:
           - up24.xyz
           - app.up24.xyz
+      - name: oskr
+        domains:
+          - oskr.org
+          - about.oskr.org
